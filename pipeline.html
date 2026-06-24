@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Portal — CI/CD Pipeline</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#f0efe9;--card:#fff;--border:rgba(0,0,0,0.09);
+    --text:#1a1a18;--muted:#6b6b66;--subtle:#9c9a92;
+    --blue:#185FA5;--blue-bg:#E6F1FB;
+    --green:#3B6D11;--green-bg:#EAF3DE;
+    --amber:#854F0B;--amber-bg:#FAEEDA;
+    --red:#A32D2D;--red-bg:#FCEBEB;
+    --purple:#534AB7;--purple-bg:#EEEDFE;
+    --teal:#0F6E56;--teal-bg:#E1F5EE;
+    --radius:12px;
+  }
+  @media(prefers-color-scheme:dark){
+    :root{
+      --bg:#111110;--card:#1e1e1c;--border:rgba(255,255,255,0.08);
+      --text:#e8e6de;--muted:#9c9a92;--subtle:#6b6b66;
+      --blue:#85B7EB;--blue-bg:#042C53;
+      --green:#97C459;--green-bg:#173404;
+      --amber:#EF9F27;--amber-bg:#412402;
+      --red:#F09595;--red-bg:#501313;
+      --purple:#AFA9EC;--purple-bg:#26215C;
+      --teal:#5DCAA5;--teal-bg:#04342C;
+    }
+  }
+  body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+  nav{background:var(--card);border-bottom:0.5px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;gap:0;position:sticky;top:0;z-index:10}
+  .nav-logo{font-size:14px;font-weight:600;color:var(--blue);display:flex;align-items:center;gap:8px;margin-right:32px}
+  .nav-logo i{font-size:18px}
+  .nav-link{padding:0 14px;height:52px;display:flex;align-items:center;font-size:13px;color:var(--muted);text-decoration:none;border-bottom:2px solid transparent;transition:.15s;white-space:nowrap}
+  .nav-link:hover{color:var(--text)}
+  .nav-link.active{color:var(--blue);border-bottom-color:var(--blue)}
+  .nav-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .nav-badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;background:var(--green-bg);color:var(--green)}
+  .nav-avatar{width:30px;height:30px;border-radius:50%;background:var(--blue-bg);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600}
+
+  .main{max-width:1100px;margin:0 auto;padding:24px}
+  .page-header{margin-bottom:20px;display:flex;align-items:flex-start;justify-content:space-between}
+  .page-title{font-size:22px;font-weight:600;margin-bottom:4px}
+  .page-sub{font-size:13px;color:var(--muted)}
+  .badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;display:inline-block}
+  .b-blue{background:var(--blue-bg);color:var(--blue)}
+  .b-green{background:var(--green-bg);color:var(--green)}
+  .b-amber{background:var(--amber-bg);color:var(--amber)}
+  .b-red{background:var(--red-bg);color:var(--red)}
+  .b-purple{background:var(--purple-bg);color:var(--purple)}
+  .b-teal{background:var(--teal-bg);color:var(--teal)}
+
+  /* PSEE STAGE OVERVIEW */
+  .psee-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+  .psee-card{background:var(--card);border:0.5px solid var(--border);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden}
+  .psee-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+  .psee-plan::before{background:var(--blue)}
+  .psee-source::before{background:var(--purple)}
+  .psee-execute::before{background:var(--teal)}
+  .psee-evidence::before{background:var(--green)}
+  .psee-num{font-size:10px;font-weight:700;letter-spacing:1px;color:var(--muted);margin-bottom:8px}
+  .psee-title{font-size:15px;font-weight:600;margin-bottom:4px}
+  .psee-sub{font-size:11px;color:var(--muted);line-height:1.5}
+  .psee-icon{font-size:24px;margin-bottom:10px}
+
+  /* WORKFLOW CODE */
+  .code-card{background:var(--card);border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:20px;overflow:hidden}
+  .code-header{padding:10px 16px;background:var(--bg);border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted)}
+  .code-dot{width:10px;height:10px;border-radius:50%}
+  .code-body{padding:16px;font-family:'SF Mono',Monaco,Consolas,monospace;font-size:12px;line-height:1.8;overflow-x:auto;color:var(--text)}
+  .ck{color:var(--blue)}.cv{color:var(--teal)}.cs{color:var(--green)}.cm{color:var(--muted);font-style:italic}.cst{color:var(--purple)}
+
+  /* RUN CARDS */
+  .runs-section{margin-bottom:8px}
+  .section-title{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .run-card{background:var(--card);border:0.5px solid var(--border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;transition:.2s}
+  .run-card:hover{border-color:rgba(0,0,0,0.18)}
+  .run-header{padding:12px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
+  .run-status-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+  .s-green{background:#3B6D11}.s-amber{background:#854F0B}.s-red{background:#A32D2D}.s-blue{background:#185FA5}
+  .run-id{font-family:monospace;font-size:11px;background:var(--bg);padding:2px 7px;border-radius:4px;color:var(--muted);white-space:nowrap}
+  .run-msg{font-size:13px;font-weight:500;flex:1}
+  .run-meta{display:flex;align-items:center;gap:8px;flex-shrink:0}
+  .run-meta span{font-size:11px;color:var(--muted)}
+  .chevron{font-size:14px;color:var(--muted);transition:transform .2s;flex-shrink:0}
+
+  .stages{padding:14px 16px;border-top:0.5px solid var(--border);display:none}
+  .stages.open{display:flex;gap:0}
+  .stage{flex:1;padding:0 12px;border-right:0.5px solid var(--border)}
+  .stage:first-child{padding-left:0}
+  .stage:last-child{border-right:none}
+  .stage-icon-wrap{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;margin-bottom:8px}
+  .stage-name{font-size:12px;font-weight:600;margin-bottom:3px}
+  .stage-status{font-size:11px;margin-bottom:8px}
+  .step{display:flex;align-items:flex-start;gap:6px;font-size:11px;color:var(--muted);padding:3px 0;line-height:1.4}
+  .step-icon{font-size:12px;flex-shrink:0;margin-top:1px}
+
+  footer{text-align:center;padding:32px 24px;font-size:11px;color:var(--subtle);border-top:0.5px solid var(--border);margin-top:8px}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo"><i class="ti ti-school"></i> StudentPortal</div>
+  <a class="nav-link" href="dashboard.html"><i class="ti ti-layout-dashboard" style="margin-right:6px"></i>Dashboard</a>
+  <a class="nav-link active" href="pipeline.html"><i class="ti ti-circle-check" style="margin-right:6px"></i>CI/CD</a>
+  <a class="nav-link" href="postman.html"><i class="ti ti-send" style="margin-right:6px"></i>API Tests</a>
+  <a class="nav-link" href="jira.html"><i class="ti ti-stack-2" style="margin-right:6px"></i>Sprint Board</a>
+  <div class="nav-right">
+    <span class="nav-badge"><i class="ti ti-circle-check" style="font-size:10px"></i> CI Passing</span>
+    <div class="nav-avatar">AD</div>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="page-header">
+    <div>
+      <div class="page-title">CI/CD Pipeline</div>
+      <div class="page-sub">GitHub Actions · studentportal/main · All checks passing</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span class="badge b-green"><i class="ti ti-circle-check" style="font-size:11px"></i> 4/4 passing</span>
+      <span class="badge b-blue">main branch</span>
+    </div>
+  </div>
+
+  <!-- PSEE STAGE OVERVIEW -->
+  <div class="psee-grid">
+    <div class="psee-card psee-plan">
+      <div class="psee-num">STAGE 1</div>
+      <div class="psee-icon" style="color:var(--blue)"><i class="ti ti-map"></i></div>
+      <div class="psee-title">Plan</div>
+      <div class="psee-sub">Checkout source, install dependencies, validate environment variables and config files.</div>
+    </div>
+    <div class="psee-card psee-source">
+      <div class="psee-num">STAGE 2</div>
+      <div class="psee-icon" style="color:var(--purple)"><i class="ti ti-source-code"></i></div>
+      <div class="psee-title">Source</div>
+      <div class="psee-sub">ESLint, Prettier format check, TypeScript type-check. Zero errors required to proceed.</div>
+    </div>
+    <div class="psee-card psee-execute">
+      <div class="psee-num">STAGE 3</div>
+      <div class="psee-icon" style="color:var(--teal)"><i class="ti ti-player-play"></i></div>
+      <div class="psee-title">Execute</div>
+      <div class="psee-sub">Production build, unit tests with coverage, and full Postman/Newman API test suite.</div>
+    </div>
+    <div class="psee-card psee-evidence">
+      <div class="psee-num">STAGE 4</div>
+      <div class="psee-icon" style="color:var(--green)"><i class="ti ti-file-check"></i></div>
+      <div class="psee-title">Evidence</div>
+      <div class="psee-sub">Upload build artifacts, publish test reports, deploy to GitHub Pages, notify Slack.</div>
+    </div>
+  </div>
+
+  <!-- WORKFLOW FILE -->
+  <div class="code-card">
+    <div class="code-header">
+      <div class="code-dot" style="background:#ff5f56"></div>
+      <div class="code-dot" style="background:#ffbd2e"></div>
+      <div class="code-dot" style="background:#27c93f"></div>
+      <span style="margin-left:6px"><i class="ti ti-brand-github" style="font-size:13px"></i> .github/workflows/deploy.yml</span>
+      <span class="badge b-blue" style="margin-left:auto;font-size:10px">on push → main, dev</span>
+    </div>
+    <div class="code-body">
+<span class="cm"># Student Portal CI/CD — Plan → Source → Execute → Evidence</span>
+<span class="ck">name:</span> <span class="cs">Student Portal CI/CD</span>
+<span class="ck">on:</span>
+  <span class="ck">push:</span>
+    <span class="ck">branches:</span> <span class="cs">[ main, dev ]</span>
+  <span class="ck">pull_request:</span>
+    <span class="ck">branches:</span> <span class="cs">[ main ]</span>
+
+<span class="ck">jobs:</span>
+  <span class="ck">pipeline:</span>
+    <span class="ck">runs-on:</span> <span class="cs">ubuntu-latest</span>
+    <span class="ck">steps:</span>
+
+      <span class="cm">      # ── STAGE 1: PLAN ────────────────────────────────────</span>
+      - <span class="ck">name:</span> <span class="cs">"PLAN · Checkout source"</span>
+        <span class="ck">uses:</span> <span class="cst">actions/checkout@v4</span>
+      - <span class="ck">name:</span> <span class="cs">"PLAN · Setup Node.js 20"</span>
+        <span class="ck">uses:</span> <span class="cst">actions/setup-node@v4</span>
+        <span class="ck">with:</span>
+          <span class="ck">node-version:</span> <span class="cs">'20'</span>
+          <span class="ck">cache:</span> <span class="cs">'npm'</span>
+      - <span class="ck">name:</span> <span class="cs">"PLAN · Install dependencies"</span>
+        <span class="ck">run:</span> <span class="cv">npm ci</span>
+
+      <span class="cm">      # ── STAGE 2: SOURCE ──────────────────────────────────</span>
+      - <span class="ck">name:</span> <span class="cs">"SOURCE · ESLint"</span>
+        <span class="ck">run:</span> <span class="cv">npm run lint</span>
+      - <span class="ck">name:</span> <span class="cs">"SOURCE · Prettier format check"</span>
+        <span class="ck">run:</span> <span class="cv">npm run format:check</span>
+      - <span class="ck">name:</span> <span class="cs">"SOURCE · TypeScript type-check"</span>
+        <span class="ck">run:</span> <span class="cv">npm run type-check</span>
+
+      <span class="cm">      # ── STAGE 3: EXECUTE ─────────────────────────────────</span>
+      - <span class="ck">name:</span> <span class="cs">"EXECUTE · Build production bundle"</span>
+        <span class="ck">run:</span> <span class="cv">npm run build</span>
+      - <span class="ck">name:</span> <span class="cs">"EXECUTE · Unit tests with coverage"</span>
+        <span class="ck">run:</span> <span class="cv">npm run test:coverage</span>
+      - <span class="ck">name:</span> <span class="cs">"EXECUTE · API tests via Newman"</span>
+        <span class="ck">run:</span> <span class="cv">npx newman run StudentPortal.postman_collection.json \
+               --reporters cli,json \
+               --reporter-json-export newman-results.json</span>
+
+      <span class="cm">      # ── STAGE 4: EVIDENCE ────────────────────────────────</span>
+      - <span class="ck">name:</span> <span class="cs">"EVIDENCE · Upload build artifacts"</span>
+        <span class="ck">uses:</span> <span class="cst">actions/upload-artifact@v4</span>
+        <span class="ck">with:</span>
+          <span class="ck">name:</span> <span class="cs">build-dist-${{ github.sha }}</span>
+          <span class="ck">path:</span> <span class="cs">dist/</span>
+      - <span class="ck">name:</span> <span class="cs">"EVIDENCE · Upload Newman results"</span>
+        <span class="ck">uses:</span> <span class="cst">actions/upload-artifact@v4</span>
+        <span class="ck">if:</span> <span class="cs">always()</span>
+        <span class="ck">with:</span>
+          <span class="ck">name:</span> <span class="cs">newman-results-${{ github.sha }}</span>
+          <span class="ck">path:</span> <span class="cs">newman-results.json</span>
+      - <span class="ck">name:</span> <span class="cs">"EVIDENCE · Deploy to GitHub Pages"</span>
+        <span class="ck">if:</span> <span class="cs">github.ref == 'refs/heads/main' && success()</span>
+        <span class="ck">uses:</span> <span class="cst">peaceiris/actions-gh-pages@v4</span>
+        <span class="ck">with:</span>
+          <span class="ck">github_token:</span> <span class="cs">${{ secrets.GITHUB_TOKEN }}</span>
+          <span class="ck">publish_dir:</span> <span class="cs">./dist</span>
+    </div>
+  </div>
+
+  <!-- PIPELINE RUNS -->
+  <div class="runs-section">
+    <div class="section-title"><i class="ti ti-history" style="font-size:15px"></i> Recent Runs — studentportal/main</div>
+    <div id="runs-container"></div>
+  </div>
+</div>
+
+<footer>Student Portal Management System · DevOps Demo · GitHub Actions + Postman + Jira</footer>
+
+<script>
+const runs=[
+  {id:'#482',sha:'a3f9c12',msg:'feat: add notifications panel and grade chart',branch:'main',ago:'2 min ago',status:'green',duration:'1m 42s',
+   stages:[
+    {color:'blue',icon:'ti-map',name:'Plan',status:'Passed',statusColor:'green',steps:[{ok:true,t:'Checkout (actions/checkout@v4)'},{ok:true,t:'Node.js 20 setup + cache hit'},{ok:true,t:'npm ci — 18 packages installed'}]},
+    {color:'purple',icon:'ti-source-code',name:'Source',status:'Passed',statusColor:'green',steps:[{ok:true,t:'ESLint — 0 errors, 0 warnings'},{ok:true,t:'Prettier — all files formatted'},{ok:true,t:'TypeScript — no type errors'}]},
+    {color:'teal',icon:'ti-player-play',name:'Execute',status:'Passed',statusColor:'green',steps:[{ok:true,t:'Build — 2.3s, 247 KB bundle'},{ok:true,t:'Tests — 42/42 passed, 91% coverage'},{ok:true,t:'Newman — 15/15 API tests passed'}]},
+    {color:'green',icon:'ti-file-check',name:'Evidence',status:'Passed',statusColor:'green',steps:[{ok:true,t:'Artifacts uploaded (build-dist-a3f9c12)'},{ok:true,t:'Deployed → studentportal.github.io'},{ok:true,t:'Slack notified ✓'}]},
+  ]},
+  {id:'#481',sha:'c7d1e88',msg:'fix: enrollment table pagination bug on mobile',branch:'main',ago:'1 hr ago',status:'green',duration:'1m 38s',
+   stages:[
+    {color:'blue',icon:'ti-map',name:'Plan',status:'Passed',statusColor:'green',steps:[{ok:true,t:'Checkout'},{ok:true,t:'Node.js 20 setup'},{ok:true,t:'npm ci — cache hit'}]},
+    {color:'purple',icon:'ti-source-code',name:'Source',status:'Passed',statusColor:'green',steps:[{ok:true,t:'ESLint — 0 errors'},{ok:true,t:'Prettier — OK'},{ok:true,t:'TypeScript — OK'}]},
+    {color:'teal',icon:'ti-player-play',name:'Execute',status:'Passed',statusColor:'green',steps:[{ok:true,t:'Build — 2.1s'},{ok:true,t:'Tests — 42/42, 89% coverage'},{ok:true,t:'Newman — 15/15 passed'}]},
+    {color:'green',icon:'ti-file-check',name:'Evidence',status:'Passed',statusColor:'green',steps:[{ok:true,t:'Artifacts uploaded'},{ok:true,t:'Deployed → GitHub Pages'},{ok:true,t:'Slack notified ✓'}]},
+  ]},
+  {id:'#480',sha:'f2a09bb',msg:'chore: update dependencies and CI node version to 20',branch:'dev',ago:'5 hr ago',status:'green',duration:'2m 04s',
+   stages:[
+    {color:'blue',icon:'ti-map',name:'Plan',status:'Passed',statusColor:'green',steps:[{ok:true,t:'Checkout'},{ok:true,t:'Node.js 20 setup'},{ok:true,t:'npm ci — 124 packages installed'}]},
+    {color:'purple',icon:'ti-source-code',name:'Source',status:'Passed',statusColor:'green',steps:[{ok:true,t:'ESLint — 0 errors'},{ok:true,t:'Prettier — OK'},{ok:true,t:'TypeScript — OK'}]},
+    {color:'teal',icon:'ti-player-play',name:'Execute',status:'Passed',statusColor:'green',steps:[{ok:true,t:'Build — 2.5s'},{ok:true,t:'Tests — 42/42, 90% coverage'},{ok:true,t:'Newman — 15/15 passed'}]},
+    {color:'green',icon:'ti-file-check',name:'Evidence',status:'Passed',statusColor:'green',steps:[{ok:true,t:'Artifacts uploaded'},{ok:true,t:'Deploy skipped (dev branch)'},{ok:true,t:'Slack notified ✓'}]},
+  ]},
+  {id:'#479',sha:'e99b301',msg:'feat: add grade upload for admins [WIP]',branch:'dev',ago:'8 hr ago',status:'amber',duration:'0m 48s',
+   stages:[
+    {color:'blue',icon:'ti-map',name:'Plan',status:'Passed',statusColor:'green',steps:[{ok:true,t:'Checkout'},{ok:true,t:'Node.js 20 setup'},{ok:true,t:'npm ci — cache hit'}]},
+    {color:'purple',icon:'ti-source-code',name:'Source',status:'Failed',statusColor:'red',steps:[{ok:false,t:'ESLint — 3 errors found'},{ok:false,t:'Error: no-unused-vars in GradeUpload.js'},{ok:false,t:'Halted — subsequent steps skipped'}]},
+    {color:'teal',icon:'ti-player-play',name:'Execute',status:'Skipped',statusColor:'amber',steps:[{ok:null,t:'Blocked by lint failure'},{ok:null,t:'Build not attempted'},{ok:null,t:'Tests not run'}]},
+    {color:'green',icon:'ti-file-check',name:'Evidence',status:'Skipped',statusColor:'amber',steps:[{ok:null,t:'No artifacts to upload'},{ok:null,t:'Deploy skipped'},{ok:false,t:'Slack notified — pipeline failed'}]},
+  ]},
+];
+
+const colorMap={
+  blue:'var(--blue)',purple:'var(--purple)',teal:'var(--teal)',green:'var(--green)',red:'var(--red)',amber:'var(--amber)'
+};
+const bgMap={
+  blue:'var(--blue-bg)',purple:'var(--purple-bg)',teal:'var(--teal-bg)',green:'var(--green-bg)',red:'var(--red-bg)',amber:'var(--amber-bg)'
+};
+const statusDotClass={green:'s-green',amber:'s-amber',red:'s-red',blue:'s-blue'};
+
+function buildRuns(){
+  const container=document.getElementById('runs-container');
+  runs.forEach((r,ri)=>{
+    const card=document.createElement('div');
+    card.className='run-card';
+    const branchBadge=r.branch==='main'?'b-blue':'b-amber';
+    card.innerHTML=`
+      <div class="run-header" onclick="toggle(${ri})">
+        <div class="run-status-dot ${statusDotClass[r.status]}"></div>
+        <span class="run-id">${r.id}</span>
+        <span class="run-msg">${r.msg}</span>
+        <div class="run-meta">
+          <span class="badge ${branchBadge}">${r.branch}</span>
+          <code style="font-size:10px;background:var(--bg);padding:2px 6px;border-radius:4px;color:var(--muted)">${r.sha}</code>
+          <span><i class="ti ti-clock" style="font-size:12px"></i> ${r.duration}</span>
+          <span>${r.ago}</span>
+        </div>
+        <i class="ti ti-chevron-down chevron" id="chev-${ri}"></i>
+      </div>
+      <div class="stages" id="stages-${ri}">
+        ${r.stages.map(s=>`
+          <div class="stage">
+            <div class="stage-icon-wrap" style="background:${bgMap[s.color]};color:${colorMap[s.color]}"><i class="ti ${s.icon}"></i></div>
+            <div class="stage-name">${s.name}</div>
+            <div class="stage-status" style="color:${colorMap[s.statusColor]||colorMap[s.color]}">${s.status}</div>
+            ${s.steps.map(st=>`
+              <div class="step">
+                <span class="step-icon" style="color:${st.ok===true?'var(--green)':st.ok===false?'var(--red)':'var(--muted)'}">
+                  ${st.ok===true?'✓':st.ok===false?'✕':'·'}
+                </span>
+                <span>${st.t}</span>
+              </div>
+            `).join('')}
+          </div>
+        `).join('')}
+      </div>
+    `;
+    container.appendChild(card);
+  });
+  toggle(0);
+}
+
+function toggle(i){
+  const el=document.getElementById('stages-'+i);
+  const ch=document.getElementById('chev-'+i);
+  const open=el.classList.contains('open');
+  el.classList.toggle('open',!open);
+  ch.style.transform=open?'':'rotate(180deg)';
+}
+
+buildRuns();
+</script>
+</body>
+</html>

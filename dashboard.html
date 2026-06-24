@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Portal — Dashboard</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#f0efe9;--card:#fff;--border:rgba(0,0,0,0.09);
+    --text:#1a1a18;--muted:#6b6b66;--subtle:#9c9a92;
+    --blue:#185FA5;--blue-bg:#E6F1FB;--blue-light:#b5d4f4;
+    --green:#3B6D11;--green-bg:#EAF3DE;
+    --amber:#854F0B;--amber-bg:#FAEEDA;
+    --red:#A32D2D;--red-bg:#FCEBEB;
+    --purple:#534AB7;--purple-bg:#EEEDFE;
+    --teal:#0F6E56;--teal-bg:#E1F5EE;
+    --radius:12px;
+  }
+  @media(prefers-color-scheme:dark){
+    :root{
+      --bg:#111110;--card:#1e1e1c;--border:rgba(255,255,255,0.08);
+      --text:#e8e6de;--muted:#9c9a92;--subtle:#6b6b66;
+      --blue:#85B7EB;--blue-bg:#042C53;--blue-light:#185FA5;
+      --green:#97C459;--green-bg:#173404;
+      --amber:#EF9F27;--amber-bg:#412402;
+      --red:#F09595;--red-bg:#501313;
+      --purple:#AFA9EC;--purple-bg:#26215C;
+      --teal:#5DCAA5;--teal-bg:#04342C;
+    }
+  }
+  body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+  /* NAV */
+  nav{background:var(--card);border-bottom:0.5px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;gap:0;position:sticky;top:0;z-index:10}
+  .nav-logo{font-size:14px;font-weight:600;color:var(--blue);display:flex;align-items:center;gap:8px;margin-right:32px}
+  .nav-logo i{font-size:18px}
+  .nav-link{padding:0 14px;height:52px;display:flex;align-items:center;font-size:13px;color:var(--muted);text-decoration:none;border-bottom:2px solid transparent;transition:.15s;white-space:nowrap}
+  .nav-link:hover{color:var(--text)}
+  .nav-link.active{color:var(--blue);border-bottom-color:var(--blue)}
+  .nav-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .nav-badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;background:var(--green-bg);color:var(--green)}
+  .nav-avatar{width:30px;height:30px;border-radius:50%;background:var(--blue-bg);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600}
+
+  /* MAIN */
+  .main{max-width:1200px;margin:0 auto;padding:24px}
+  .page-header{margin-bottom:24px}
+  .page-title{font-size:22px;font-weight:600;margin-bottom:4px}
+  .page-sub{font-size:13px;color:var(--muted)}
+
+  /* STAT CARDS */
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+  .stat-card{background:var(--card);border:0.5px solid var(--border);border-radius:var(--radius);padding:18px 20px;transition:.2s}
+  .stat-card:hover{border-color:var(--blue-light)}
+  .stat-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:12px}
+  .stat-label{font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+  .stat-value{font-size:28px;font-weight:700;line-height:1;margin-bottom:6px}
+  .stat-delta{font-size:12px;display:flex;align-items:center;gap:4px}
+  .delta-up{color:var(--green)}.delta-dn{color:var(--red)}
+
+  /* ROW GRID */
+  .row2{display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-bottom:12px}
+  .row3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-bottom:12px}
+  .card{background:var(--card);border:0.5px solid var(--border);border-radius:var(--radius);padding:18px 20px}
+  .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .card-title{font-size:13px;font-weight:600;color:var(--text)}
+  .card-sub{font-size:11px;color:var(--muted)}
+
+  /* TABLE */
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{color:var(--muted);font-weight:500;text-align:left;padding:0 0 10px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;border-bottom:0.5px solid var(--border)}
+  td{padding:10px 0;border-bottom:0.5px solid var(--border);color:var(--text);vertical-align:middle}
+  tr:last-child td{border:none}
+  .av{width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;margin-right:8px;vertical-align:middle;flex-shrink:0}
+  .name-cell{display:flex;align-items:center}
+
+  /* BADGES */
+  .badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500;display:inline-block}
+  .b-blue{background:var(--blue-bg);color:var(--blue)}
+  .b-green{background:var(--green-bg);color:var(--green)}
+  .b-amber{background:var(--amber-bg);color:var(--amber)}
+  .b-red{background:var(--red-bg);color:var(--red)}
+  .b-purple{background:var(--purple-bg);color:var(--purple)}
+  .b-teal{background:var(--teal-bg);color:var(--teal)}
+
+  /* PROGRESS BAR */
+  .prog{background:var(--bg);border-radius:4px;height:5px;overflow:hidden;width:80px}
+  .prog-fill{height:100%;border-radius:4px}
+
+  /* CHART */
+  .chart-wrap{position:relative;height:120px;display:flex;align-items:flex-end;gap:6px;padding-top:8px}
+  .bar-g{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
+  .bar{border-radius:4px 4px 0 0;width:100%;transition:.6s;cursor:pointer}
+  .bar:hover{opacity:.75}
+  .bar-lbl{font-size:10px;color:var(--muted)}
+  .bar-val{font-size:10px;font-weight:600;color:var(--text)}
+
+  /* DONUT */
+  .donut-wrap{display:flex;align-items:center;gap:16px}
+  .donut-legend{display:flex;flex-direction:column;gap:8px}
+  .legend-item{display:flex;align-items:center;gap:6px;font-size:12px}
+  .legend-dot{width:8px;height:8px;border-radius:50%}
+
+  /* ACTIVITY */
+  .activity-list{display:flex;flex-direction:column;gap:0}
+  .act-item{display:flex;gap:12px;padding:10px 0;border-bottom:0.5px solid var(--border);align-items:flex-start}
+  .act-item:last-child{border:none}
+  .act-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+  .act-text{font-size:12px;flex:1;line-height:1.5}
+  .act-time{font-size:11px;color:var(--muted);white-space:nowrap}
+
+  /* MINI STATS */
+  .mini-stat{text-align:center;padding:12px 8px}
+  .mini-val{font-size:20px;font-weight:700;margin-bottom:4px}
+  .mini-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+
+  /* FOOTER */
+  footer{text-align:center;padding:32px 24px;font-size:11px;color:var(--subtle);border-top:0.5px solid var(--border);margin-top:8px}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo"><i class="ti ti-school"></i> StudentPortal</div>
+  <a class="nav-link active" href="dashboard.html"><i class="ti ti-layout-dashboard" style="margin-right:6px"></i>Dashboard</a>
+  <a class="nav-link" href="pipeline.html"><i class="ti ti-circle-check" style="margin-right:6px"></i>CI/CD</a>
+  <a class="nav-link" href="postman.html"><i class="ti ti-send" style="margin-right:6px"></i>API Tests</a>
+  <a class="nav-link" href="jira.html"><i class="ti ti-stack-2" style="margin-right:6px"></i>Sprint Board</a>
+  <div class="nav-right">
+    <span class="nav-badge"><i class="ti ti-circle-check" style="font-size:10px"></i> CI Passing</span>
+    <div class="nav-avatar">AD</div>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="page-header">
+    <div class="page-title">Dashboard</div>
+    <div class="page-sub">Academic Year 2025–26 · Semester 2 · Last updated Jun 24, 2025</div>
+  </div>
+
+  <!-- STAT CARDS -->
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:var(--blue-bg);color:var(--blue)"><i class="ti ti-users"></i></div>
+      <div class="stat-label">Total Students</div>
+      <div class="stat-value" style="color:var(--blue)">2,847</div>
+      <div class="stat-delta delta-up"><i class="ti ti-trending-up" style="font-size:13px"></i> +12.4% from last semester</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:var(--purple-bg);color:var(--purple)"><i class="ti ti-clipboard-list"></i></div>
+      <div class="stat-label">Active Enrollments</div>
+      <div class="stat-value" style="color:var(--purple)">1,203</div>
+      <div class="stat-delta delta-up"><i class="ti ti-trending-up" style="font-size:13px"></i> +8.1% this month</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:var(--teal-bg);color:var(--teal)"><i class="ti ti-chart-bar"></i></div>
+      <div class="stat-label">Average GPA</div>
+      <div class="stat-value" style="color:var(--teal)">3.62</div>
+      <div class="stat-delta delta-up"><i class="ti ti-trending-up" style="font-size:13px"></i> +0.08 from last term</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:var(--amber-bg);color:var(--amber)"><i class="ti ti-user-minus"></i></div>
+      <div class="stat-label">Drop Rate</div>
+      <div class="stat-value" style="color:var(--amber)">4.2%</div>
+      <div class="stat-delta delta-up"><i class="ti ti-trending-down" style="font-size:13px"></i> -1.1% improvement</div>
+    </div>
+  </div>
+
+  <!-- ROW 2: chart + table -->
+  <div class="row2">
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Enrollment by Department</div>
+          <div class="card-sub">Current semester headcount</div>
+        </div>
+        <span class="badge b-blue">AY 2025–26</span>
+      </div>
+      <div class="chart-wrap" id="dept-chart"></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Enrollment Status</div>
+        <div class="card-sub">Distribution</div>
+      </div>
+      <div class="donut-wrap" style="margin-top:8px">
+        <canvas id="donut" width="100" height="100"></canvas>
+        <div class="donut-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div><span>Enrolled <strong>68%</strong></span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div><span>Pending <strong>14%</strong></span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div><span>Waitlist <strong>11%</strong></span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div><span>Rejected <strong>7%</strong></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 3: students + mini stats + notifications -->
+  <div class="row3">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Top Students by GPA</div>
+        <span class="badge b-teal">This Semester</span>
+      </div>
+      <table>
+        <tr><th>Student</th><th>Dept</th><th>GPA</th><th>Credits</th><th>Progress</th></tr>
+        <tr>
+          <td><div class="name-cell"><span class="av" style="background:var(--blue-bg);color:var(--blue)">AS</span>Arjun Singh</div></td>
+          <td><span class="badge b-blue">CS</span></td><td><strong>3.97</strong></td><td>24</td>
+          <td><div class="prog"><div class="prog-fill" style="width:99%;background:var(--blue)"></div></div></td>
+        </tr>
+        <tr>
+          <td><div class="name-cell"><span class="av" style="background:var(--purple-bg);color:var(--purple)">PM</span>Priya Mehta</div></td>
+          <td><span class="badge b-purple">EE</span></td><td><strong>3.94</strong></td><td>22</td>
+          <td><div class="prog"><div class="prog-fill" style="width:98%;background:var(--purple)"></div></div></td>
+        </tr>
+        <tr>
+          <td><div class="name-cell"><span class="av" style="background:var(--teal-bg);color:var(--teal)">RK</span>Rahul Kumar</div></td>
+          <td><span class="badge b-teal">MATH</span></td><td><strong>3.89</strong></td><td>20</td>
+          <td><div class="prog"><div class="prog-fill" style="width:97%;background:var(--teal)"></div></div></td>
+        </tr>
+        <tr>
+          <td><div class="name-cell"><span class="av" style="background:var(--green-bg);color:var(--green)">SN</span>Sneha Nair</div></td>
+          <td><span class="badge b-green">BIO</span></td><td><strong>3.85</strong></td><td>21</td>
+          <td><div class="prog"><div class="prog-fill" style="width:96%;background:var(--green)"></div></div></td>
+        </tr>
+        <tr>
+          <td><div class="name-cell"><span class="av" style="background:var(--amber-bg);color:var(--amber)">VR</span>Vikram Rao</div></td>
+          <td><span class="badge b-amber">PHYS</span></td><td><strong>3.81</strong></td><td>19</td>
+          <td><div class="prog"><div class="prog-fill" style="width:95%;background:var(--amber)"></div></div></td>
+        </tr>
+      </table>
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;gap:0">
+      <div class="card-head" style="margin-bottom:8px"><div class="card-title">Quick Stats</div></div>
+      <div class="mini-stat" style="border-bottom:0.5px solid var(--border)">
+        <div class="mini-val" style="color:var(--blue)">48</div>
+        <div class="mini-lbl">Courses Active</div>
+      </div>
+      <div class="mini-stat" style="border-bottom:0.5px solid var(--border)">
+        <div class="mini-val" style="color:var(--green)">91%</div>
+        <div class="mini-lbl">Attendance Rate</div>
+      </div>
+      <div class="mini-stat" style="border-bottom:0.5px solid var(--border)">
+        <div class="mini-val" style="color:var(--purple)">124</div>
+        <div class="mini-lbl">Faculty Members</div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-val" style="color:var(--amber)">17</div>
+        <div class="mini-lbl">Open Scholarships</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Notifications</div>
+        <span class="badge b-red">3 new</span>
+      </div>
+      <div class="activity-list">
+        <div class="act-item"><div class="act-dot" style="background:var(--red)"></div><div class="act-text">Assignment deadline extended — CS401 ML</div><div class="act-time">2m ago</div></div>
+        <div class="act-item"><div class="act-dot" style="background:var(--blue)"></div><div class="act-text">Grade update posted for EE302 mid-term</div><div class="act-time">1h ago</div></div>
+        <div class="act-item"><div class="act-dot" style="background:var(--amber)"></div><div class="act-text">Enrollment window closes in 48 hours</div><div class="act-time">3h ago</div></div>
+        <div class="act-item"><div class="act-dot" style="background:var(--green)"></div><div class="act-text">Scholarship results announced for Sem 2</div><div class="act-time">Yesterday</div></div>
+        <div class="act-item"><div class="act-dot" style="background:var(--purple)"></div><div class="act-text">New course: Advanced Data Structures added</div><div class="act-time">2d ago</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECENT ENROLLMENTS TABLE -->
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">Recent Enrollments</div>
+        <div class="card-sub">Latest student enrollment activity</div>
+      </div>
+      <span class="badge b-blue">Live</span>
+    </div>
+    <table>
+      <tr><th>Student</th><th>Course</th><th>Department</th><th>Faculty</th><th>Date</th><th>Status</th></tr>
+      <tr><td><div class="name-cell"><span class="av" style="background:var(--blue-bg);color:var(--blue)">AP</span>Aditya Patel</div></td><td>CS401 — Machine Learning</td><td><span class="badge b-blue">CS</span></td><td>Dr. Sharma</td><td>Jun 23</td><td><span class="badge b-green">Enrolled</span></td></tr>
+      <tr><td><div class="name-cell"><span class="av" style="background:var(--teal-bg);color:var(--teal)">MR</span>Meena Rajan</div></td><td>EE302 — Circuits</td><td><span class="badge b-purple">EE</span></td><td>Dr. Iyer</td><td>Jun 23</td><td><span class="badge b-blue">Pending</span></td></tr>
+      <tr><td><div class="name-cell"><span class="av" style="background:var(--green-bg);color:var(--green)">KT</span>Kiran Thomas</div></td><td>MA201 — Calculus III</td><td><span class="badge b-teal">MATH</span></td><td>Dr. Menon</td><td>Jun 22</td><td><span class="badge b-green">Enrolled</span></td></tr>
+      <tr><td><div class="name-cell"><span class="av" style="background:var(--amber-bg);color:var(--amber)">DS</span>Devi Suresh</div></td><td>BIO110 — Cell Biology</td><td><span class="badge b-green">BIO</span></td><td>Dr. Pillai</td><td>Jun 22</td><td><span class="badge b-amber">Waitlist</span></td></tr>
+      <tr><td><div class="name-cell"><span class="av" style="background:var(--red-bg);color:var(--red)">RM</span>Raj Mohan</div></td><td>PH201 — Quantum Physics</td><td><span class="badge b-amber">PHYS</span></td><td>Dr. Nanda</td><td>Jun 21</td><td><span class="badge b-red">Rejected</span></td></tr>
+      <tr><td><div class="name-cell"><span class="av" style="background:var(--purple-bg);color:var(--purple)">LK</span>Lakshmi Kumar</div></td><td>CS302 — Databases</td><td><span class="badge b-blue">CS</span></td><td>Dr. Reddy</td><td>Jun 21</td><td><span class="badge b-green">Enrolled</span></td></tr>
+    </table>
+  </div>
+</div>
+
+<footer>Student Portal Management System · DevOps Demo · GitHub Actions + Postman + Jira</footer>
+
+<script>
+// Dept bar chart
+const depts=[
+  {name:'CS',val:72,color:'var(--blue)'},
+  {name:'EE',val:58,color:'var(--purple)'},
+  {name:'MATH',val:44,color:'var(--teal)'},
+  {name:'PHYS',val:36,color:'var(--amber)'},
+  {name:'BIO',val:52,color:'var(--green)'},
+  {name:'CHEM',val:28,color:'var(--red)'},
+  {name:'HIST',val:40,color:'var(--blue)'},
+  {name:'ECO',val:33,color:'var(--purple)'},
+];
+const chart=document.getElementById('dept-chart');
+const max=Math.max(...depts.map(d=>d.val));
+depts.forEach(d=>{
+  const g=document.createElement('div');g.className='bar-g';
+  g.innerHTML=`<div class="bar-val">${d.val}</div><div class="bar" style="height:${Math.round(d.val/max*90)}px;background:${d.color};opacity:.85" title="${d.name}: ${d.val}0 students"></div><div class="bar-lbl">${d.name}</div>`;
+  chart.appendChild(g);
+});
+
+// Donut canvas
+const canvas=document.getElementById('donut');
+const ctx=canvas.getContext('2d');
+const dark=window.matchMedia('(prefers-color-scheme:dark)').matches;
+const slices=[
+  {pct:.68,color:'#3B6D11'},{pct:.14,color:'#185FA5'},
+  {pct:.11,color:'#854F0B'},{pct:.07,color:'#A32D2D'}
+];
+let a=-Math.PI/2;
+const cx=50,cy=50,r=42,ri=28;
+ctx.clearRect(0,0,100,100);
+slices.forEach(s=>{
+  const end=a+s.pct*2*Math.PI;
+  ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,a,end);ctx.closePath();
+  ctx.fillStyle=s.color;ctx.fill();
+  a=end;
+});
+ctx.beginPath();ctx.arc(cx,cy,ri,0,2*Math.PI);
+ctx.fillStyle=dark?'#1e1e1c':'#fff';ctx.fill();
+</script>
+</body>
+</html>

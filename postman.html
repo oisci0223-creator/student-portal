@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Portal — API Tests</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#f0efe9;--card:#fff;--border:rgba(0,0,0,0.09);
+    --text:#1a1a18;--muted:#6b6b66;--subtle:#9c9a92;
+    --blue:#185FA5;--blue-bg:#E6F1FB;
+    --green:#3B6D11;--green-bg:#EAF3DE;
+    --amber:#854F0B;--amber-bg:#FAEEDA;
+    --red:#A32D2D;--red-bg:#FCEBEB;
+    --purple:#534AB7;--purple-bg:#EEEDFE;
+    --teal:#0F6E56;--teal-bg:#E1F5EE;
+    --radius:12px;
+  }
+  @media(prefers-color-scheme:dark){
+    :root{
+      --bg:#111110;--card:#1e1e1c;--border:rgba(255,255,255,0.08);
+      --text:#e8e6de;--muted:#9c9a92;--subtle:#6b6b66;
+      --blue:#85B7EB;--blue-bg:#042C53;
+      --green:#97C459;--green-bg:#173404;
+      --amber:#EF9F27;--amber-bg:#412402;
+      --red:#F09595;--red-bg:#501313;
+      --purple:#AFA9EC;--purple-bg:#26215C;
+      --teal:#5DCAA5;--teal-bg:#04342C;
+    }
+  }
+  body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+  nav{background:var(--card);border-bottom:0.5px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;position:sticky;top:0;z-index:10}
+  .nav-logo{font-size:14px;font-weight:600;color:var(--blue);display:flex;align-items:center;gap:8px;margin-right:32px}
+  .nav-logo i{font-size:18px}
+  .nav-link{padding:0 14px;height:52px;display:flex;align-items:center;font-size:13px;color:var(--muted);text-decoration:none;border-bottom:2px solid transparent;transition:.15s;white-space:nowrap}
+  .nav-link:hover{color:var(--text)}
+  .nav-link.active{color:var(--blue);border-bottom-color:var(--blue)}
+  .nav-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .nav-badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;background:var(--green-bg);color:var(--green)}
+  .nav-avatar{width:30px;height:30px;border-radius:50%;background:var(--blue-bg);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600}
+  .badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;display:inline-block}
+  .b-blue{background:var(--blue-bg);color:var(--blue)}
+  .b-green{background:var(--green-bg);color:var(--green)}
+  .b-amber{background:var(--amber-bg);color:var(--amber)}
+  .b-red{background:var(--red-bg);color:var(--red)}
+
+  .main{max-width:1200px;margin:0 auto;padding:24px}
+  .page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px}
+  .page-title{font-size:22px;font-weight:600;margin-bottom:4px}
+  .page-sub{font-size:13px;color:var(--muted)}
+
+  /* METRICS BAR */
+  .metrics-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}
+  .m-card{background:var(--card);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;text-align:center}
+  .m-val{font-size:22px;font-weight:700;margin-bottom:4px}
+  .m-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+
+  /* LAYOUT */
+  .pm-layout{display:grid;grid-template-columns:260px 1fr;gap:14px}
+
+  /* SIDEBAR */
+  .pm-sidebar{display:flex;flex-direction:column;gap:6px}
+  .sidebar-label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:0 4px;margin-bottom:2px}
+  .pm-item{padding:10px 12px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:.15s;border:0.5px solid transparent}
+  .pm-item:hover{background:var(--card);border-color:var(--border)}
+  .pm-item.active{background:var(--card);border-color:var(--blue)}
+  .pm-item-name{font-size:12px;font-weight:500;flex:1}
+  .pm-item-status{width:7px;height:7px;border-radius:50%}
+  .method-pill{font-size:10px;font-weight:700;padding:2px 6px;border-radius:5px;min-width:40px;text-align:center;flex-shrink:0}
+  .m-get{background:var(--green-bg);color:var(--green)}
+  .m-post{background:var(--blue-bg);color:var(--blue)}
+  .m-put{background:var(--amber-bg);color:var(--amber)}
+  .m-del{background:var(--red-bg);color:var(--red)}
+
+  /* DETAIL PANE */
+  .detail-pane{display:flex;flex-direction:column;gap:12px}
+  .url-bar{background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px}
+  .url-method{font-size:12px;font-weight:700;padding:3px 8px;border-radius:6px;min-width:46px;text-align:center}
+  .url-path{font-family:'SF Mono',Consolas,monospace;font-size:12px;flex:1;color:var(--text)}
+  .run-all-btn{padding:8px 18px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:.2s;display:flex;align-items:center;gap:6px}
+  .run-all-btn:hover{opacity:.88}
+  .run-all-btn:disabled{opacity:.5;cursor:not-allowed}
+
+  .info-row{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--muted)}
+
+  .tab-group{display:flex;border-bottom:0.5px solid var(--border);margin-bottom:0}
+  .det-tab{padding:8px 14px;font-size:12px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit;transition:.15s}
+  .det-tab:hover{color:var(--text)}
+  .det-tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+
+  .tab-content{background:var(--card);border:0.5px solid var(--border);border-radius:var(--radius);overflow:hidden}
+  .code-block{padding:14px 16px;font-family:'SF Mono',Consolas,monospace;font-size:12px;line-height:1.7;color:var(--text);background:var(--bg);border-top:none;max-height:220px;overflow-y:auto}
+  .test-list{padding:0}
+  .test-row{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:0.5px solid var(--border);font-size:12px}
+  .test-row:last-child{border:none}
+  .test-icon{font-size:15px;flex-shrink:0}
+  .test-name{flex:1}
+  .test-result{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+  .tr-pass{background:var(--green-bg);color:var(--green)}
+  .tr-fail{background:var(--red-bg);color:var(--red)}
+  .tr-pending{background:var(--bg);color:var(--muted)}
+  .resp-status{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+  .rs-ok{background:var(--green-bg);color:var(--green)}
+  .rs-wait{background:var(--bg);color:var(--muted)}
+
+  /* PROGRESS BAR FOR PASS RATE */
+  .pass-bar-wrap{background:var(--bg);border-radius:6px;height:8px;overflow:hidden;margin-top:8px}
+  .pass-bar{height:100%;border-radius:6px;background:var(--green);transition:width .6s}
+
+  footer{text-align:center;padding:32px 24px;font-size:11px;color:var(--subtle);border-top:0.5px solid var(--border);margin-top:24px}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo"><i class="ti ti-school"></i> StudentPortal</div>
+  <a class="nav-link" href="dashboard.html"><i class="ti ti-layout-dashboard" style="margin-right:6px"></i>Dashboard</a>
+  <a class="nav-link" href="pipeline.html"><i class="ti ti-circle-check" style="margin-right:6px"></i>CI/CD</a>
+  <a class="nav-link active" href="postman.html"><i class="ti ti-send" style="margin-right:6px"></i>API Tests</a>
+  <a class="nav-link" href="jira.html"><i class="ti ti-stack-2" style="margin-right:6px"></i>Sprint Board</a>
+  <div class="nav-right">
+    <span class="nav-badge"><i class="ti ti-circle-check" style="font-size:10px"></i> CI Passing</span>
+    <div class="nav-avatar">AD</div>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="page-header">
+    <div>
+      <div class="page-title">API Tests</div>
+      <div class="page-sub">StudentPortal.postman_collection.json · v1.0.0 · 5 requests · 19 assertions</div>
+    </div>
+    <button class="run-all-btn" id="run-btn" onclick="runAll()">
+      <i class="ti ti-player-play"></i> Run Collection
+    </button>
+  </div>
+
+  <!-- METRICS -->
+  <div class="metrics-row">
+    <div class="m-card">
+      <div class="m-val" id="m-total" style="color:var(--blue)">19</div>
+      <div class="m-lbl">Total Tests</div>
+    </div>
+    <div class="m-card">
+      <div class="m-val" id="m-pass" style="color:var(--green)">—</div>
+      <div class="m-lbl">Passed</div>
+    </div>
+    <div class="m-card">
+      <div class="m-val" id="m-fail" style="color:var(--red)">—</div>
+      <div class="m-lbl">Failed</div>
+    </div>
+    <div class="m-card">
+      <div class="m-val" id="m-rate" style="color:var(--teal)">—</div>
+      <div class="m-lbl">Pass Rate</div>
+      <div class="pass-bar-wrap"><div class="pass-bar" id="pass-bar" style="width:0%"></div></div>
+    </div>
+    <div class="m-card">
+      <div class="m-val" id="m-time" style="color:var(--purple)">—</div>
+      <div class="m-lbl">Avg Response</div>
+    </div>
+  </div>
+
+  <!-- MAIN LAYOUT -->
+  <div class="pm-layout">
+    <div class="pm-sidebar">
+      <div class="sidebar-label">Requests</div>
+      <div id="pm-sidebar"></div>
+    </div>
+    <div class="detail-pane" id="detail-pane">
+      <div style="text-align:center;padding:60px 20px;color:var(--muted);font-size:13px">
+        <i class="ti ti-send" style="font-size:32px;display:block;margin-bottom:12px;opacity:.4"></i>
+        Select a request from the sidebar, or click Run Collection to execute all tests.
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>Student Portal Management System · DevOps Demo · GitHub Actions + Postman + Jira</footer>
+
+<script>
+const requests=[
+  {
+    method:'GET',name:'List all students',
+    url:'{{baseUrl}}/students?page=1&pageSize=20',
+    desc:'Returns paginated list of all registered students with department and GPA data.',
+    body:null,
+    response:`{
+  "data": [
+    { "id": "STU001", "name": "Arjun Singh", "dept": "CS", "gpa": 3.97 },
+    { "id": "STU002", "name": "Priya Mehta", "dept": "EE", "gpa": 3.94 }
+  ],
+  "total": 2847,
+  "page": 1,
+  "pageSize": 20
+}`,
+    tests:[
+      {name:'Status code is 200',pass:true,ms:112},
+      {name:'Response has "data" array',pass:true,ms:112},
+      {name:'Pagination metadata is present',pass:true,ms:112},
+      {name:'Response time is under 500ms',pass:true,ms:112},
+    ]
+  },
+  {
+    method:'POST',name:'Enroll student in course',
+    url:'{{baseUrl}}/enrollments',
+    desc:'Enroll a student into a course. Validates seat availability before confirming.',
+    body:`{
+  "studentId": "STU001",
+  "courseId": "CS401",
+  "semester": "2025-2"
+}`,
+    response:`{
+  "enrollmentId": "ENR-20250001",
+  "status": "enrolled",
+  "course": "CS401 — Machine Learning",
+  "confirmedAt": "2025-06-24T09:12:00Z"
+}`,
+    tests:[
+      {name:'Status code is 201 Created',pass:true,ms:87},
+      {name:'Response contains enrollmentId',pass:true,ms:87},
+      {name:'Enrollment status is "enrolled"',pass:true,ms:87},
+      {name:'confirmedAt is valid ISO date',pass:true,ms:87},
+    ]
+  },
+  {
+    method:'GET',name:'Get student grades',
+    url:'{{baseUrl}}/students/{{studentId}}/grades',
+    desc:'Fetch all grade records for a specific student including CGPA calculation.',
+    body:null,
+    response:`{
+  "studentId": "STU001",
+  "grades": [
+    { "course": "CS401", "grade": "A", "gpa": 4.0, "credits": 4 },
+    { "course": "MA201", "grade": "A-", "gpa": 3.7, "credits": 3 }
+  ],
+  "cgpa": 3.97
+}`,
+    tests:[
+      {name:'Status code is 200',pass:true,ms:94},
+      {name:'Grades array is present and non-empty',pass:true,ms:94},
+      {name:'CGPA is a valid number between 0–4',pass:true,ms:94},
+      {name:'Each grade has course, grade, and credits',pass:true,ms:94},
+    ]
+  },
+  {
+    method:'PUT',name:'Update student profile',
+    url:'{{baseUrl}}/students/{{studentId}}',
+    desc:'Update contact info, address, and student preferences. Returns list of updated fields.',
+    body:`{
+  "email": "arjun.singh@univ.edu",
+  "phone": "+91-9876543210",
+  "address": "Hostel Block C, Room 204"
+}`,
+    response:`{
+  "id": "STU001",
+  "updated": true,
+  "updatedAt": "2025-06-24T10:30:00Z"
+}`,
+    tests:[
+      {name:'Status code is 200',pass:true,ms:103},
+      {name:'Response confirms update with updated: true',pass:true,ms:103},
+      {name:'updatedFields array is returned',pass:false,ms:103},
+      {name:'updatedAt timestamp is in response',pass:true,ms:103},
+    ]
+  },
+  {
+    method:'DELETE',name:'Delete enrollment record',
+    url:'{{baseUrl}}/enrollments/{{enrollmentId}}',
+    desc:'Remove a student enrollment record. Admin-only endpoint requiring X-Admin-Key header.',
+    body:null,
+    response:`{
+  "deleted": true,
+  "enrollmentId": "ENR-20250001",
+  "deletedAt": "2025-06-24T11:00:00Z"
+}`,
+    tests:[
+      {name:'Status code is 200',pass:true,ms:76},
+      {name:'Response confirms deletion with deleted: true',pass:true,ms:76},
+      {name:'Correct enrollmentId echoed back',pass:true,ms:76},
+    ]
+  },
+];
+
+let hasRun=false,activeIdx=0,activeTab='tests';
+
+function methodClass(m){
+  return {GET:'m-get',POST:'m-post',PUT:'m-put',DELETE:'m-del'}[m]||'m-get';
+}
+
+function buildSidebar(){
+  const sb=document.getElementById('pm-sidebar');
+  sb.innerHTML=requests.map((r,i)=>`
+    <div class="pm-item${i===0?' active':''}" id="pm-item-${i}" onclick="selectReq(${i})">
+      <span class="method-pill ${methodClass(r.method)}">${r.method}</span>
+      <span class="pm-item-name">${r.name}</span>
+      <div class="pm-item-status" id="pm-dot-${i}" style="background:var(--subtle)"></div>
+    </div>
+  `).join('');
+}
+
+function selectReq(i){
+  document.querySelectorAll('.pm-item').forEach(el=>el.classList.remove('active'));
+  document.getElementById('pm-item-'+i)?.classList.add('active');
+  activeIdx=i;
+  renderDetail(i);
+}
+
+function renderDetail(i){
+  const r=requests[i];
+  const ran=hasRun;
+  const pane=document.getElementById('detail-pane');
+  const passCount=r.tests.filter(t=>t.pass).length;
+  const failCount=r.tests.length-passCount;
+
+  pane.innerHTML=`
+    <div class="url-bar">
+      <span class="method-pill ${methodClass(r.method)}" style="font-size:12px;padding:4px 10px">${r.method}</span>
+      <span class="url-path">${r.url}</span>
+      ${ran?`<span class="resp-status rs-ok"><i class="ti ti-circle-check" style="font-size:11px"></i> 200 OK · ${r.tests[0].ms}ms</span>`
+           :`<span class="resp-status rs-wait">Not run</span>`}
+    </div>
+    <div class="info-row">
+      <i class="ti ti-info-circle" style="font-size:13px"></i>
+      ${r.desc}
+      ${ran?`<span class="badge" style="margin-left:auto;background:${failCount>0?'var(--amber-bg)':'var(--green-bg)'};color:${failCount>0?'var(--amber)':'var(--green)'}">${passCount}/${r.tests.length} tests passed</span>`:''}
+    </div>
+    ${r.body?`
+    <div>
+      <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px">Request body</div>
+      <div class="tab-content"><div class="code-block">${escHtml(r.body)}</div></div>
+    </div>`:''}
+    <div class="tab-content">
+      <div class="tab-group">
+        <button class="det-tab${activeTab==='response'?' active':''}" onclick="switchTab('response',${i})">Response</button>
+        <button class="det-tab${activeTab==='tests'?' active':''}" onclick="switchTab('tests',${i})">
+          Tests
+          ${ran?`<span class="badge" style="margin-left:6px;font-size:10px;background:${failCount>0?'var(--amber-bg)':'var(--green-bg)'};color:${failCount>0?'var(--amber)':'var(--green)'}">${passCount}/${r.tests.length}</span>`:''}
+        </button>
+        <button class="det-tab${activeTab==='script'?' active':''}" onclick="switchTab('script',${i})">Test Script</button>
+      </div>
+      <div id="tab-body">${renderTabBody(i,activeTab,ran)}</div>
+    </div>
+  `;
+}
+
+function switchTab(tab,i){
+  activeTab=tab;
+  document.getElementById('tab-body').innerHTML=renderTabBody(i,tab,hasRun);
+  document.querySelectorAll('.det-tab').forEach(t=>t.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+function renderTabBody(i,tab,ran){
+  const r=requests[i];
+  if(tab==='response'){
+    return ran
+      ?`<div class="code-block">${escHtml(r.response)}</div>`
+      :`<div class="code-block" style="color:var(--muted)">Click "Run Collection" to execute this request and see the response.</div>`;
+  }
+  if(tab==='tests'){
+    if(!ran) return`<div class="code-block" style="color:var(--muted)">Run the collection to see test results.</div>`;
+    return`<div class="test-list">${r.tests.map(t=>`
+      <div class="test-row">
+        <span class="test-icon" style="color:${t.pass?'var(--green)':'var(--red)'}">${t.pass?'✓':'✕'}</span>
+        <span class="test-name">${t.name}</span>
+        <span class="test-result ${t.pass?'tr-pass':'tr-fail'}">${t.pass?'PASS':'FAIL'}</span>
+      </div>
+    `).join('')}</div>`;
+  }
+  if(tab==='script'){
+    return`<div class="code-block" style="font-size:11px">${buildScript(r)}</div>`;
+  }
+  return '';
+}
+
+function buildScript(r){
+  const lines=[];
+  r.tests.forEach(t=>{
+    if(t.name.includes('Status')){
+      const code=r.method==='POST'?201:200;
+      lines.push(`pm.test(<span style="color:var(--green)">'${t.name}'</span>, function () {`);
+      lines.push(`  pm.response.to.have.status(${code});`);
+      lines.push(`});`,'');
+    } else if(t.name.includes('data')||t.name.includes('array')){
+      lines.push(`pm.test(<span style="color:var(--green)">'${t.name}'</span>, function () {`);
+      lines.push(`  const body = pm.response.json();`);
+      lines.push(`  pm.expect(body.data).to.be.an(<span style="color:var(--green)">'array'</span>);`);
+      lines.push(`});`,'');
+    } else {
+      lines.push(`pm.test(<span style="color:var(--green)">'${t.name}'</span>, function () {`);
+      lines.push(`  const body = pm.response.json();`);
+      lines.push(`  pm.expect(body).to.satisfy(v => !!v);`);
+      lines.push(`});`,'');
+    }
+  });
+  return lines.join('\n');
+}
+
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function updateMetrics(ran){
+  if(!ran){
+    ['m-pass','m-fail','m-rate','m-time'].forEach(id=>document.getElementById(id).textContent='—');
+    document.getElementById('pass-bar').style.width='0%';
+    return;
+  }
+  const all=requests.flatMap(r=>r.tests);
+  const pass=all.filter(t=>t.pass).length;
+  const fail=all.length-pass;
+  const rate=Math.round(pass/all.length*100);
+  const avgMs=Math.round(requests.reduce((s,r)=>s+r.tests[0].ms,0)/requests.length);
+  document.getElementById('m-pass').textContent=pass;
+  document.getElementById('m-fail').textContent=fail;
+  document.getElementById('m-rate').textContent=rate+'%';
+  document.getElementById('m-time').textContent=avgMs+'ms';
+  document.getElementById('pass-bar').style.width=rate+'%';
+}
+
+function updateDots(){
+  requests.forEach((r,i)=>{
+    const dot=document.getElementById('pm-dot-'+i);
+    if(!dot)return;
+    const allPass=r.tests.every(t=>t.pass);
+    dot.style.background=hasRun?(allPass?'var(--green)':'var(--amber)'):'var(--subtle)';
+  });
+}
+
+let running=false;
+function runAll(){
+  if(running)return;
+  running=true;
+  hasRun=false;
+  const btn=document.getElementById('run-btn');
+  btn.disabled=true;
+  btn.innerHTML='<i class="ti ti-loader" style="animation:spin .8s linear infinite"></i> Running…';
+  updateMetrics(false);
+  updateDots();
+
+  let i=0;
+  function next(){
+    if(i>=requests.length){
+      hasRun=true;
+      running=false;
+      btn.disabled=false;
+      btn.innerHTML='<i class="ti ti-player-play"></i> Run Collection';
+      updateMetrics(true);
+      updateDots();
+      renderDetail(activeIdx);
+      return;
+    }
+    document.querySelectorAll('.pm-item').forEach(el=>el.classList.remove('active'));
+    document.getElementById('pm-item-'+i)?.classList.add('active');
+    activeIdx=i;
+    renderDetail(i);
+    setTimeout(()=>{i++;next();},380);
+  }
+  next();
+}
+
+const style=document.createElement('style');
+style.textContent='@keyframes spin{to{transform:rotate(360deg)}}';
+document.head.appendChild(style);
+
+buildSidebar();
+selectReq(0);
+</script>
+</body>
+</html>
