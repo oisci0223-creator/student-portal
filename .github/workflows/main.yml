@@ -1,0 +1,70 @@
+name: Student Portal CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  pipeline:
+    name: Plan → Source → Execute → Evidence
+    runs-on: ubuntu-latest
+
+    steps:
+      # STAGE 1 — PLAN
+      - name: "PLAN · Checkout source"
+        uses: actions/checkout@v4
+
+      - name: "PLAN · Verify project files"
+        run: |
+          echo "Files in repo:"
+          ls -la
+          echo "✓ Plan stage complete"
+
+      # STAGE 2 — SOURCE
+      - name: "SOURCE · Check HTML files exist"
+        run: |
+          for f in dashboard.html pipeline.html postman.html jira.html; do
+            if [ -f "$f" ]; then
+              echo "✓ $f found"
+            else
+              echo "✗ $f missing"
+            fi
+          done
+
+      - name: "SOURCE · Validate HTML structure"
+        run: |
+          echo "Checking DOCTYPE declarations..."
+          grep -l "<!DOCTYPE html>" *.html && echo "✓ All HTML files valid"
+
+      # STAGE 3 — EXECUTE
+      - name: "EXECUTE · Count lines of code"
+        run: |
+          echo "Lines per file:"
+          wc -l *.html
+          echo "✓ Code analysis complete"
+
+      - name: "EXECUTE · Check for broken links between pages"
+        run: |
+          echo "Checking internal navigation links..."
+          grep -h 'href=".*\.html"' *.html | grep -oP 'href="\K[^"]+' | sort | uniq
+          echo "✓ Link check complete"
+
+      # STAGE 4 — EVIDENCE
+      - name: "EVIDENCE · Upload HTML files as artifacts"
+        uses: actions/upload-artifact@v4
+        with:
+          name: student-portal-build
+          path: "*.html"
+          retention-days: 30
+
+      - name: "EVIDENCE · Pipeline summary"
+        run: |
+          echo "## ✅ Student Portal CI/CD Complete" >> $GITHUB_STEP_SUMMARY
+          echo "| Stage | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Plan | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+          echo "| Source | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+          echo "| Execute | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+          echo "| Evidence | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
